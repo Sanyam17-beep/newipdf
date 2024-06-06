@@ -6,7 +6,7 @@ import Chip from "@mui/material/Chip";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import moment from "moment";
 import Modal from "react-modal";
-import { Toaster,toast } from 'react-hot-toast';
+import { Toaster, toast } from "react-hot-toast";
 import emailjs from "emailjs-com";
 import LoadingBar from "react-top-loading-bar";
 import { MdOutlineVideoLibrary } from "react-icons/md";
@@ -36,20 +36,20 @@ function Question() {
   const savednotifications = savednotificationsJSON
     ? JSON.parse(savednotificationsJSON)
     : [];
-    const [question, setQuestion] = useState(null);
+  const [question, setQuestion] = useState(null);
   const userJSON = localStorage.getItem("user");
   const userJs = userJSON ? JSON.parse(userJSON) : [];
   const [notification, setnotification] = useState(savednotifications);
-  
-  const  {id}  = useParams();
+
+  const { id } = useParams();
   const ref = useRef(null);
   const navigate = useNavigate();
   const savedcards = savedcardsJSON ? JSON.parse(savedcardsJSON) : null;
   const [active, setactive] = useState(true);
   const [cards, setcards] = useState(savedcards);
   const [name, setname] = useState("");
-  const [userQuestion,  setuserQuestion]=useState(null);
-  const customId=userJs.id;
+  const [userQuestion, setuserQuestion] = useState(null);
+  const customId = userJs.id;
   useEffect(() => {
     // console.log(userJs);
     const fetchUserProfile = async () => {
@@ -72,7 +72,7 @@ function Question() {
     fetchUserProfile();
   }, [customId]);
   const [summary, setSummary] = useState("");
-  const handleupvote = async(index) => {
+  const handleupvote = async (index) => {
     if (cards[index].isDownvoted == 0 && cards[index].isUpvoted == 0) {
       setnotification([
         ...notification,
@@ -163,27 +163,30 @@ function Question() {
   };
   const [reply, setreply] = useState("");
   useEffect(() => {
-  
     const fetchQuestion = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/questions/${urlsearchParams.get("qid")}`);
+        const response = await fetch(
+          `http://localhost:8000/questions/${urlsearchParams.get("qid")}`
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch question');
+          throw new Error("Failed to fetch question");
         }
         const data = await response.json();
-       console.log(data.questions);
+        console.log(data.questions);
         setQuestion(data.questions);
       } catch (error) {
-        console.error('Error:', error.message);
+        console.error("Error:", error.message);
       }
     };
 
     fetchQuestion();
   }, []);
-  const handleReply = async() => {
+  const [texturl, settexturl] = useState("");
+  const handleReply = async () => {
     const newreply = {
       text: reply,
       vote: 0,
+      url: texturl,
       createdAt: Date.now(),
       isUpvoted: 0,
       isDownvoted: 0,
@@ -200,26 +203,32 @@ function Question() {
       votes: cards[id].votes,
       createdAt: cards[id].createdAt,
     };
-    const res = await fetch(`http://localhost:8000/questions/${urlsearchParams.get("qid")}/replies`,{
-      method:"PUT",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({...newreply,user_id:JSON.parse(localStorage.getItem("user")).id})
-    })
-    .then((res)=>{
-      toast('Replied successfully',
+    const res = await fetch(
+      `http://localhost:8000/questions/${urlsearchParams.get("qid")}/replies`,
       {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...newreply,
+          user_id: JSON.parse(localStorage.getItem("user")).id,
+        }),
+      }
+    ).then((res) => {
+      toast("Replied successfully", {
         style: {
-          borderRadius: '10px',
-          background: '#333',
-          color: '#fff',
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
         },
       });
       setreply("");
-      res.json();});
+      settexturl("");
+      res.json();
+    });
     console.log(res); // Reply
-   
+
     tempcards[id] = newcard;
     setcards(tempcards);
     setnotification([
@@ -472,19 +481,19 @@ function Question() {
           },
         }
       );
-        
+
       ref.current.complete();
-      
+
       setSummary(response.data[0].summary_text);
     } catch (error) {
       console.error("Error summarizing text:", error);
       alert("An error occurred while summarizing the text.");
     }
   };
-
+console.log(question?.replies);
   return (
     <div className="main">
-       <Toaster></Toaster>
+      <Toaster></Toaster>
       <Navbar notification={notification}></Navbar>
       {/* <div className='Menu-item'></div> */}
       <LoadingBar color="white" ref={ref} />
@@ -540,7 +549,11 @@ function Question() {
                 className="ProfileIcon"
                 style={{ cursor: "pointer", position: "relative" }}
               >
-                <img src={question?.user_id?.image} alt="icon" className="image" />
+                <img
+                  src={question?.user_id?.image}
+                  alt="icon"
+                  className="image"
+                />
                 {question?.user_id?.occupation == "Teacher" && (
                   <span class="goldBG goldText fix">Professor</span>
                 )}
@@ -619,31 +632,67 @@ function Question() {
           </div>
           {userJs.occupation == "Teacher" && (
             <div className="summary-box">
-                {summary&&<>{summary}</>}
-              {!summary &&<div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span style={{ color: "#6e6e6e" }}>
-                  Summarize your Question
-                </span>
+              {summary && <>{summary}</>}
+              {!summary && (
                 <div
-                  className="tfbut"
                   style={{
-                    color: "white",
-                    fontSize: "25px",
-                    cursor: "pointer",
-                    backgroundColor: "rgb(58 58 58)",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
-                  onClick={summarizeText}
                 >
-                  <TfiWrite />
+                  <span style={{ color: "#6e6e6e" }}>
+                    Summarize your Question
+                  </span>
+                  <div
+                    className="tfbut"
+                    style={{
+                      color: "white",
+                      fontSize: "25px",
+                      cursor: "pointer",
+                      backgroundColor: "rgb(58 58 58)",
+                    }}
+                    onClick={summarizeText}
+                  >
+                    <TfiWrite />
+                  </div>
                 </div>
-              </div> }
+              )}
+            </div>
+          )}
+          {userJs.occupation == "Teacher" && (
+            <div className="Reply-box">
+              <input
+                type="text"
+                value={texturl}
+                onChange={(e) => {
+                  settexturl(e.target.value);
+                }}
+                className="Reply-input"
+                placeholder={"Write Url for video solution"}
+              />
+              <div className="replb">
+                {/* <label className="addImg">
+                {/* <input
+                  // className="inputImg"
+                  // id="inputImg"
+                  type="file"
+                  //    style={{visibility:"hidden"}}
+                  accept="image/*"
+                  hidden
+                //   onChange={(e) => {
+                //     handleImageChange(e);
+                //   }}
+                /> */}
+                {/* <MdOutlineVideoLibrary />
+              </label> */}
+
+                {/* <button className="Send-reply" onClick={handleReply}>
+              Reply
+              <FaPaperPlane></FaPaperPlane>
+            </button> */}
+              </div>
             </div>
           )}
           <div className="Reply-box">
@@ -655,8 +704,9 @@ function Question() {
               }}
               className="Reply-input"
               placeholder={"Write answer for this question"}
-            /><div className="replb">
-               {userJs.occupation=="Teacher"&&  <label className="addImg" >
+            />
+            <div className="replb">
+              {/* {userJs.occupation=="Teacher"&&  <label className="addImg" >
                 <input
                   // className="inputImg"
                   // id="inputImg"
@@ -669,11 +719,12 @@ function Question() {
                 //   }}
                 />
              <MdOutlineVideoLibrary />
-              </label>}
-            <button className="Send-reply" onClick={handleReply}>
-              Reply
-              <FaPaperPlane></FaPaperPlane>
-            </button></div>
+              </label>} */}
+              <button className="Send-reply" onClick={handleReply}>
+                Reply
+                <FaPaperPlane></FaPaperPlane>
+              </button>
+            </div>
           </div>
 
           <div className="Replies-container">
@@ -698,6 +749,29 @@ function Question() {
                       {moment(new Date(e.createdAt)).fromNow()}
                     </div>
                   </div>
+                  {(e.url !== ""&&e.url !=="hello") && (
+                    <div className="box">
+                      <iframe
+                        // width="560"
+                        // height="315"
+                        src={e.url}
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                      ></iframe>
+                      {/* <iframe
+            width="560"
+            height="315"
+            src={embedUrl}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title="YouTube video player"
+          ></iframe> */}
+                    </div>
+                  )}
                   <div
                     className="Replies-content"
                     style={{ color: "aliceblue" }}
@@ -734,7 +808,7 @@ function Question() {
           <div className="MyQuestions-header">My Questions</div>
           <div className="MyQuestions-content">
             <div className="MyQuestions-content-container">
-            {userQuestion?.length == 0 && (
+              {userQuestion?.length == 0 && (
                 <div className="No-questions">No Questions Asked</div>
               )}
               {userQuestion?.map((e, i) => {
@@ -743,18 +817,22 @@ function Question() {
                   <>
                     <div
                       className="MyQuestions-content-box"
-                      onClick={() => {urlsearchParams.set("qid",e?._id);navigate(`/question/${i}?`+urlsearchParams.toString())}}
+                      onClick={() => {
+                        urlsearchParams.set("qid", e?._id);
+                        navigate(
+                          `/question/${i}?` + urlsearchParams.toString()
+                        );
+                      }}
                     >
                       <div className="MyQuestions-content-title">
                         <span>{e.title}</span>?
                       </div>
+
                       <div className="MyQuestions-content-votes-container">
                         <div className="MyQuestions-content-votes">
                           Votes:{e.votes} Replies:{e.replies?.length}
                         </div>
-                        <div>
-                          {moment(new Date(e?.createdAt)).fromNow()}
-                        </div>
+                        <div>{moment(new Date(e?.createdAt)).fromNow()}</div>
                       </div>
                     </div>
                   </>

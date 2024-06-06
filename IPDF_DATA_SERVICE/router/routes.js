@@ -137,7 +137,7 @@ router.put('/questions/:questionId/replies', async (req, res) => {
         const { questionId } = req.params;
         console.log(questionId);
         const reply_bdy = req.body;
-
+       console.log(reply_bdy);
         const newReply = new Reply(reply_bdy); // Creating a reply added by a user for a particular question
         await newReply.save();
 

@@ -7,7 +7,19 @@
     opacity: 0;
     transition: opacity 300ms ease-in-out;
 }
-
+/* .box{
+    width:100%;
+    /* height: 500px; */
+    /* background-color: #007acc;
+}  */
+.box{
+    width:100%;
+    height: 500px;
+}
+.box>iframe{
+    width: 100%;
+    height: 100%;
+}
 .ReactModal__Overlay--after-open{
     opacity: 1;
 }

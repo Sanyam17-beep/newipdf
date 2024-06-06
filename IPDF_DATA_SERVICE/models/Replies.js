@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const ReplySchema = new Schema({
     text: String,
     vote: Number,
+    url: String,
     createdAt: { type: Date, default: Date.now },
     isUpvoted: Number,
     isDownvoted: Number,
