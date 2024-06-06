@@ -7,7 +7,9 @@
     font-family: 'Poppins', sans-serif;
 }
 
-
+.twitter-button{
+    width: 100%;
+}
 .twitter-container {
     display: flex;
     flex-direction: column;

@@ -48,6 +48,29 @@ function Question() {
   const [active, setactive] = useState(true);
   const [cards, setcards] = useState(savedcards);
   const [name, setname] = useState("");
+  const [userQuestion,  setuserQuestion]=useState(null);
+  const customId=userJs.id;
+  useEffect(() => {
+    // console.log(userJs);
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/getUserProfile/${customId}`
+        ); // Change userId to customId in the URL
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+        const data = await response.json();
+        console.log(data.data);
+        // setUserProfile(data.data.profile);
+        setuserQuestion(data.data.questions);
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+    };
+
+    fetchUserProfile();
+  }, [customId]);
   const [summary, setSummary] = useState("");
   const handleupvote = async(index) => {
     if (cards[index].isDownvoted == 0 && cards[index].isUpvoted == 0) {
@@ -711,12 +734,16 @@ function Question() {
           <div className="MyQuestions-header">My Questions</div>
           <div className="MyQuestions-content">
             <div className="MyQuestions-content-container">
-              {cards.map((e, i) => {
+            {userQuestion?.length == 0 && (
+                <div className="No-questions">No Questions Asked</div>
+              )}
+              {userQuestion?.map((e, i) => {
+                console.log(e);
                 return (
                   <>
                     <div
                       className="MyQuestions-content-box"
-                      onClick={() => navigate(`/question/${i}`)}
+                      onClick={() => {urlsearchParams.set("qid",e?._id);navigate(`/question/${i}?`+urlsearchParams.toString())}}
                     >
                       <div className="MyQuestions-content-title">
                         <span>{e.title}</span>?
@@ -726,7 +753,7 @@ function Question() {
                           Votes:{e.votes} Replies:{e.replies?.length}
                         </div>
                         <div>
-                          {moment(new Date(cards[i].createdAt)).fromNow()}
+                          {moment(new Date(e?.createdAt)).fromNow()}
                         </div>
                       </div>
                     </div>

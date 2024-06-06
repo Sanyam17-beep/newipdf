@@ -21,6 +21,9 @@ import Tesseract from "tesseract.js";
 import { Toaster, toast } from "react-hot-toast";
 import Modal from "react-modal";
 import emailjs from "emailjs-com";
+import Groq from "groq-sdk";
+const groq = new Groq({ apiKey: "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" ,
+dangerouslyAllowBrowser: true,});
 const formatDate = (date) => {
   const options = { day: "2-digit", month: "short", year: "numeric" };
   return new Date(date).toLocaleDateString("en-US", options);
@@ -37,10 +40,10 @@ const generateRandomPassword = (length) => {
 
   return password;
 };
-const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+// const openai = new OpenAI({
+//   apiKey: "jiji",
+//   dangerouslyAllowBrowser: true,
+// });
 
 function Home() {
   const navigate = useNavigate();
@@ -113,7 +116,30 @@ function Home() {
   const [cards, setcards] = useState(savedcards);
   const [Ans, setAns] = useState("");
   const [mapans, setmapans] = useState([]);
+  const [userQuestion,  setuserQuestion]=useState(null);
+  const customId=userJs.id;
   const [active, setactive] = useState(true);
+  useEffect(() => {
+    // console.log(userJs);
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/getUserProfile/${customId}`
+        ); // Change userId to customId in the URL
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+        const data = await response.json();
+        console.log(data.data);
+        // setUserProfile(data.data.profile);
+        setuserQuestion(data.data.questions);
+      } catch (error) {
+        console.error("Error:", error.message);
+      }
+    };
+
+    fetchUserProfile();
+  }, [customId]);
   const handlepost = async() => {
     if (question.trim() === "") {
       toast.error("Question cannot be empty", {
@@ -292,10 +318,15 @@ function Home() {
     }
     ref.current.continuousStart();
     try {
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "system", content: question }],
-        model: "gpt-3.5-turbo",
-      });
+      const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content:question,
+      },
+    ],
+    model: "llama3-8b-8192",
+  });
       if (completion.choices[0].message.content != null) {
         ref.current.complete();
       }
@@ -308,9 +339,14 @@ function Home() {
   const handlerefresh = async () => {
     try {
       const temp = question + Ans + "genrate another response";
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "system", content: temp }],
-        model: "gpt-3.5-turbo",
+      const completion = await  groq.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content:temp,
+          },
+        ],
+        model: "llama3-8b-8192",
       });
       if (completion.choices[0].message.content != null) {
         ref.current.complete();
@@ -324,9 +360,14 @@ function Home() {
   const newques = async (text) => {
     try {
       const temp = text + "remove typo  ";
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "system", content: temp }],
-        model: "gpt-3.5-turbo",
+      const completion = await  groq.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content:temp,
+          },
+        ],
+        model: "llama3-8b-8192",
       });
       if (completion.choices[0].message.content != null) {
         ref.current.complete();
@@ -792,15 +833,16 @@ function Home() {
           <div className="MyQuestions-header">My Questions</div>
           <div className="MyQuestions-content">
             <div className="MyQuestions-content-container">
-              {cards.length == 0 && (
+              {userQuestion?.length == 0 && (
                 <div className="No-questions">No Questions Asked</div>
               )}
-              {cards?.map((e, i) => {
+              {userQuestion?.map((e, i) => {
+                console.log(e);
                 return (
                   <>
                     <div
                       className="MyQuestions-content-box"
-                      onClick={() => {urlsearchParams.set("qid",e?._id);navigate(`/question/${i}`+urlsearchParams.toString())}}
+                      onClick={() => {urlsearchParams.set("qid",e?._id);navigate(`/question/${i}?`+urlsearchParams.toString())}}
                     >
                       <div className="MyQuestions-content-title">
                         <span>{e.title}</span>?
@@ -810,7 +852,7 @@ function Home() {
                           Votes:{e.votes} Replies:{e.replies?.length}
                         </div>
                         <div>
-                          {moment(new Date(cards[i].createdAt)).fromNow()}
+                          {moment(new Date(e?.createdAt)).fromNow()}
                         </div>
                       </div>
                     </div>

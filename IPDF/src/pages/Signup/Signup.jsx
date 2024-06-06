@@ -83,11 +83,11 @@ function Signup() {
         </button>
         <button className="twitter-button">
             <img
-                src="https://img.icons8.com/ios-filled/50/undefined/mac-os.png"
+                src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
                 alt="apple logo"
                 className="img"
             />
-            <p>Sign up with Apple</p>
+            <p>Sign up with Facebook</p>
         </button>
         <p style={{color:"aliceblue"}}>or</p>
         <form className="twitter-form" onSubmit={handleSubmit}>
